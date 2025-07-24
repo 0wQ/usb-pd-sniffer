@@ -1,0 +1,11 @@
+.mrs/
+.idea/
+.vscode/
+.settings/
+
+obj/
+
+*.launch
+.cproject
+
+*.DS_Store
