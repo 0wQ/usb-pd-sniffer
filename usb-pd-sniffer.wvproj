@@ -77,10 +77,9 @@
 					"${project}/CherryUSB/core/usbh_core.h",
 					"${project}/CherryUSB/core/usbotg_core.c",
 					"${project}/CherryUSB/core/usbotg_core.h",
-					"${project}/CherryUSB/class/cdc/usb_cdc.h",
-					"${project}/CherryUSB/class/cdc/usbd_cdc.h",
 					"${project}/CherryUSB/common/usb_osal.h",
-					"${project}/CherryUSB/common/usb_otg.h"
+					"${project}/CherryUSB/common/usb_otg.h",
+					"${project}/CherryUSB/common/usb_hc.h"
 				],
 				"optimization": {
 					"level": "more",
