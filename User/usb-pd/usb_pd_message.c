@@ -290,3 +290,10 @@ pd_msg_buffer_t *get_message_buffer(void) {
 void reset_message_counter(void) {
     pdMessage.msg_counter = 0;
 }
+
+/**
+ * @brief 清空消息缓冲区（丢弃未读消息）
+ */
+void clear_message_buffer(void) {
+    msg_buffer.read_idx = msg_buffer.write_idx;
+}
