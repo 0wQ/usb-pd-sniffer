@@ -50,7 +50,7 @@ int main(void) {
     cdc_acm_prints("\n"); // 等待 ep_tx_busy_flag 串口打开后才会继续执行
     led_strip_set_pixel_with_refresh(0, 0x0A, 0x00, 0x00);
     Delay_Ms(500);
-    cdc_acm_prints("\nUSB PD Sniffer - 开启 DTR 显示调试信息\n");
+    cdc_acm_prints("\n> \037USB PD Sniffer - 开启 DTR 显示调试信息\n");
 
     // cc_en
     usb_pd_cc_en(true);

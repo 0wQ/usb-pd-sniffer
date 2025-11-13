@@ -143,13 +143,13 @@ void usb_pd_cc_check_connection(cc_state_t *cc_state) {
         static uint32_t last_print_time = 0;
         if (millis() - last_print_time > 100) {
             last_print_time = millis();
-            cdc_acm_printf("COND:%u, CC1:%03umV, CC2:%03umV, VBUS:%05umV, VDD:%dmV\n", cc_state->cc_connection, cc1_volt, cc2_volt, vbus_volt, adc_get_vdd_mv());
+            cdc_acm_printf("> \037COND:%u, CC1:%03umV, CC2:%03umV, VBUS:%05umV, VDD:%dmV\n", cc_state->cc_connection, cc1_volt, cc2_volt, vbus_volt, adc_get_vdd_mv());
         }
     }
 
     if (vbus_volt < 1000) {
         if (cc_state->cc_connection) {
-            cdc_acm_printf("%ums Detach:CC%u, CC1:%03umV, CC2:%03umV, VBUS:%05umV\n", millis(), cc_state->cc_connection, cc1_volt, cc2_volt, vbus_volt);
+            cdc_acm_printf("> \037%ums \037Detach:CC%u, CC1:%03umV, CC2:%03umV, VBUS:%05umV\n", millis(), cc_state->cc_connection, cc1_volt, cc2_volt, vbus_volt);
             usb_pd_cc_detach(cc_state);
         }
         return;
@@ -173,7 +173,7 @@ void usb_pd_cc_check_connection(cc_state_t *cc_state) {
 
         // 如果连续检测到未连接，则认为连接断开
         if (!cond && cc_state->cc_connection_count >= 10) {
-            cdc_acm_printf("%ums Detach:CC%u, CC1:%03umV, CC2:%03umV, VBUS:%05umV\n", millis(), cc_state->cc_connection, cc1_volt, cc2_volt, vbus_volt);
+            cdc_acm_printf("> \037%ums \037Detach:CC%u, CC1:%03umV, CC2:%03umV, VBUS:%05umV\n", millis(), cc_state->cc_connection, cc1_volt, cc2_volt, vbus_volt);
             usb_pd_cc_detach(cc_state);
         }
     } else {
@@ -225,12 +225,12 @@ void usb_pd_cc_check_connection(cc_state_t *cc_state) {
             if (cc_state->cc_connection == 1) {
                 USBPD->CONFIG &= ~CC_SEL;
                 led_strip_set_pixel_with_refresh(0, 0x00, 0x00, 0x0A); // RGB BLUE
-                cdc_acm_printf("%ums Attach:CC1, CC1:%03umV, CC2:%03umV, VBUS:%05umV\n", millis(), cc1_volt, cc2_volt, vbus_volt);
+                cdc_acm_printf("> \037%ums \037Attach:CC1, CC1:%03umV, CC2:%03umV, VBUS:%05umV\n", millis(), cc1_volt, cc2_volt, vbus_volt);
             }
             if (cc_state->cc_connection == 2) {
                 USBPD->CONFIG |= CC_SEL;
                 led_strip_set_pixel_with_refresh(0, 0x00, 0x0A, 0x00); // RGB GREEN
-                cdc_acm_printf("%ums Attach:CC2, CC1:%03umV, CC2:%03umV, VBUS:%05umV\n", millis(), cc1_volt, cc2_volt, vbus_volt);
+                cdc_acm_printf("> \037%ums \037Attach:CC2, CC1:%03umV, CC2:%03umV, VBUS:%05umV\n", millis(), cc1_volt, cc2_volt, vbus_volt);
             }
         }
     }
