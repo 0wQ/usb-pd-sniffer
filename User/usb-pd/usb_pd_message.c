@@ -182,7 +182,7 @@ void print_message(pd_msg_t *msg) {
     uint8_t data_len = 2 + (header->NumberOfDataObjects * 4); // 头部 2 字节 + 数据对象长度
 
     // 时间 电压 序号 SOP
-    cdc_acm_printf("%ums %05umV #%03u %-5s ", msg->timestamp_ms, adc_raw_to_vbus_mv(msg->vbus_raw), msg->msg_id, get_sop_type_name(msg->status));
+    cdc_acm_printf("> \037%ums \037%05umV \037#%03u \037%-5s \037", msg->timestamp_ms, adc_raw_to_vbus_mv(msg->vbus_raw), msg->msg_id, get_sop_type_name(msg->status));
 
     if (msg->status & IF_RX_RESET) {
         cdc_acm_prints("RX_RESET\n");
@@ -191,19 +191,19 @@ void print_message(pd_msg_t *msg) {
 
     // 消息类型
     if (header->Extended) {
-        cdc_acm_printf("%-15s ", find_msg_type_name(header->MessageType, ext_msg_desc, "Ext"));
+        cdc_acm_printf("%-15s \037", find_msg_type_name(header->MessageType, ext_msg_desc, "Ext"));
     } else {
-        cdc_acm_printf("%-15s ", get_message_type_name(header));
+        cdc_acm_printf("%-15s \037", get_message_type_name(header));
     }
 
     // 消息 ID
-    cdc_acm_printf("%u ", header->MessageID);
+    cdc_acm_printf("%u \037", header->MessageID);
 
     // 方向
-    cdc_acm_printf("%s ", get_direction_str(msg->status, header));
+    cdc_acm_printf("%s \037", get_direction_str(msg->status, header));
 
     // 版本
-    cdc_acm_printf("V%u ", header->SpecificationRevision + 1);
+    cdc_acm_printf("V%u \037", header->SpecificationRevision + 1);
 
     // 数据对象数量
     // cdc_acm_printf("%-1u ", header->NumberOfDataObjects);
@@ -234,10 +234,10 @@ void print_message(pd_msg_t *msg) {
 
     // 检查连续的消息类型
     if (is_goodcrc && last_msg_was_goodcrc) {
-        cdc_acm_printf(" ←WARN!!");
+        cdc_acm_printf(" \037←WARN!!");
     }
     if (!is_goodcrc && !last_msg_was_goodcrc && msg->msg_id != 1) {
-        cdc_acm_printf(" ←WARN!!");
+        cdc_acm_printf(" \037←WARN!!");
     }
 
     cdc_acm_printf("\n");
@@ -289,4 +289,11 @@ pd_msg_buffer_t *get_message_buffer(void) {
  */
 void reset_message_counter(void) {
     pdMessage.msg_counter = 0;
+}
+
+/**
+ * @brief 清空消息缓冲区（丢弃未读消息）
+ */
+void clear_message_buffer(void) {
+    msg_buffer.read_idx = msg_buffer.write_idx;
 }

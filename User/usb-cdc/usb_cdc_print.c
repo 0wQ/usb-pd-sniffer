@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include "usb_cdc_print.h"
+#include "usb_pd_snk.h"
 
 /*!< endpoint address */
 #define CDC_IN_EP  0x81
@@ -146,6 +147,43 @@ static void usbd_event_handler(uint8_t busid, uint8_t event) {
 
 void usbd_cdc_acm_bulk_out(uint8_t busid, uint8_t ep, uint32_t nbytes) {
     USB_LOG_RAW("actual out len:%d\r\n", (unsigned int)nbytes);
+
+    /* Dispatch received data: commands in LISTEN mode, binary PD frames in SNK mode */
+    if (nbytes > 0) {
+        if (usb_pd_snk_is_active()) {
+            /* In SNK mode: check for "exit" command (ASCII), otherwise treat as raw PD bytes */
+            if (nbytes == 4 &&
+                read_buffer[0] == 'e' && read_buffer[1] == 'x' && read_buffer[2] == 'i' && read_buffer[3] == 't') {
+                usb_pd_snk_exit();
+            } else {
+                usb_pd_snk_on_cdc_bytes(read_buffer, (uint8_t)nbytes);
+            }
+        } else {
+            /* In LISTEN mode: accept ASCII command "snk2"/"snk3" or plain "snk" */
+            if ((nbytes >= 4) &&
+                (read_buffer[0] == 's' || read_buffer[0] == 'S') &&
+                (read_buffer[1] == 'n' || read_buffer[1] == 'N') &&
+                (read_buffer[2] == 'k' || read_buffer[2] == 'K') &&
+                (read_buffer[3] == '2')) {
+                usb_pd_snk_set_spec_rev(2);
+                usb_pd_snk_enter();
+            } else if ((nbytes >= 4) &&
+                       (read_buffer[0] == 's' || read_buffer[0] == 'S') &&
+                       (read_buffer[1] == 'n' || read_buffer[1] == 'N') &&
+                       (read_buffer[2] == 'k' || read_buffer[2] == 'K') &&
+                       (read_buffer[3] == '3')) {
+                usb_pd_snk_set_spec_rev(3);
+                usb_pd_snk_enter();
+            } else if (nbytes >= 3 &&
+                       (read_buffer[0] == 's' || read_buffer[0] == 'S') &&
+                       (read_buffer[1] == 'n' || read_buffer[1] == 'N') &&
+                       (read_buffer[2] == 'k' || read_buffer[2] == 'K')) {
+                /* default to PD2.0 when plain 'snk' used */
+                usb_pd_snk_set_spec_rev(2);
+                usb_pd_snk_enter();
+            }
+        }
+    }
 
     /* setup next out ep read transfer */
     usbd_ep_start_read(busid, ep, read_buffer, CDC_MAX_MPS);

@@ -51,3 +51,5 @@ void print_message(pd_msg_t *msg);
 void save_message(uint32_t status, uint8_t *data, uint8_t len);
 void reset_message_counter(void);
 pd_msg_buffer_t *get_message_buffer(void);
+/* Clear pending messages (set read=write) */
+void clear_message_buffer(void);
